@@ -1,0 +1,41 @@
+---
+# tasks file for compute
+
+- name: Create list of osimage definitions
+  shell: 'lsdef -t osimage'
+  register: images
+
+- name: Build the required compute nodes
+  shell: |
+    mkdef -t node '{{ node.name }}' groups={{ node.groups }} ip={{ node.ip }} mac={{ node.mac }} netboot={{ node.netboot }}
+    '{% set list = images.stdout.replace("  (osimage)", "").splitlines() %}'
+    '{% set iso = node.iso.lower().split("/")[-1].split("-") %}'
+    '{% for ele in list %}'
+    '{% set eleS = ele.split("-") %}'
+    '{% if (eleS[0]+eleS[1]==iso[0]+iso[1]+iso[2]) and (eleS[-2]=="netboot") and (eleS[-1]=="compute") and (node.install=="diskless") %}' 
+    genimage '{{ ele }}'
+    packimage '{{ ele }}'
+    nodeset '{{ node.name }}' osimage={{ ele }}
+    '{% elif (eleS[0]+eleS[1]==iso[0]+iso[1]+iso[2]) and (eleS[-2]=="install") and (eleS[-1]=="compute") and (node.install=="diskfull") %}'
+    nodeset '{{ node.name }}' osimage={{ ele }}
+    '{% endif %}'
+    '{% endfor %}'
+
+    makehosts '{{ node.name }}'
+
+  with_items: '{{ nodes }}'
+  vars:
+          node: '{{ item }}'
+
+- name: Make dns, networks and dhcp
+  shell: |
+    makedns
+    makenetworks
+    makedhcp -n
+    makedhcp -a
+
+- name: Validation
+  shell: xcatprobe xcatmn -i ens160        
+
+
+...

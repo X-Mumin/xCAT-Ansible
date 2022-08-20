@@ -1,0 +1,27 @@
+lsdef -t osimage
+
+{% for node in nodes %}
+
+	copycds {{ n.iso }}
+
+	{% set list = {{ 'AA  (osimage)BASD  (osimage)FEFEW  (osimage)' }}.split('  (osimage)') %}
+	{% for item in list %}
+		{% if (item.split('-')[-2]=='install') and (item.split('-')[-1]=='compute') -%}
+			{{ item }}
+		{% endif %}
+		{% if (item.split('-')[-2]=='netboot') -%}
+			{{ item }}
+		{% endif %}
+	{% endfor %}
+{% endfor %}
+
+
+#mkdef -t node '{{ n.name }}' groups={{ n.groups }} ip={{ n.ip }} mac={{ n.mac }} netboot={{ n.netboot }}
+#genimage '{{ n.os }}'
+#packimage '{{ n.os }}'
+#nodeset '{{ n.name }}' osimage={{ n.os }}
+#makehosts '{{ n.name }}'
+#makedns
+#makenetworks
+#makedhcp -n
+#makedhcp -a
