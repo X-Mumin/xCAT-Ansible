@@ -1,0 +1,15 @@
+---
+
+- name: build compute nodes
+  hosts: 127.0.0.1
+  connection: local
+  vars:
+          cns:
+                  - { name: 'cn5', groups: 'all,x86_64,diskfull', ip: '192.168.10.200', mac: '00:50:56:36:6C:DC', netboot: 'pxe', iso: '/root/shared/Linux/CentOS-Stream-8-x86_64-latest-dvd1.iso', install: 'diskfull' }
+                  - { name: 'cn7', groups: 'all,x86_64,diskless', ip: '192.168.10.201', mac: '00:50:56:20:4B:EC', netboot: 'pxe', iso: '/root/shared/Linux/CentOS-Stream-8-x86_64-latest-dvd1.iso', install: 'diskless' }
+
+  roles: 
+    - role: compute
+      nodes: "{{ cns }}"
+
+...
